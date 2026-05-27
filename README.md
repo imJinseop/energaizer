@@ -2,6 +2,8 @@
 
 Artifact of "EnergAIzer: Fast and Accurate GPU Power Estimation Framework for AI Workloads" (ISPASS'26). 
 
+[Paper](https://arxiv.org/abs/2604.20105)
+
 ## Setup
 
 First, clone this repository with `git clone`.
@@ -121,6 +123,37 @@ This command will run power predictions for the workloads in `test/data/workload
 
 Beyond the artifact evaluation, you can use this repository for your own research involving GPU power estimation for AI workloads. 
 We outline different use cases below. 
+
+### 0. Predicting a single kernel
+
+If you want to estimate latency, power, and energy consumption for a single kernel (instead of running the end-to-end scripts), first instantiate the estimator similar to this example:
+```python
+from gee import get_gee
+
+estimator = get_gee(gpu_yaml_path=config/gpu/yz8.yaml, \
+                    lut_yaml_path=experiments_endtoend/exp_config/a100_lut_config.yaml, \
+                    dvfs_aware=True, \
+                    dvfs_inference_mode='all', \
+                    dvfs_supply_voltage_json=config/dvfs/yz8/supply_voltage.json, \
+                    dvfs_idle_power_json=config/dvfs/yz8/idle_power.json, \
+                    lut_folder_abs_path=database/data
+                    )
+```
+Then, prepare a query, specifying the tensor shape, precision, and operator type. 
+Please check [test/code/README.md](test/code/README.md) or `def test` in [`experiments_single/gee_estimator.py`](experiments_single/gee_estimator.py) to see the query format. 
+The example below illustrates for a GEMM kernel:
+```python
+query = {'batch': [BATCH_SIZE], \
+         'dimM': [M_DIM_IN_GEMM], \
+         'dimN: [N_DIM_IN_GEMM], \
+         'dimK': [K_DIM_IN_GEMM], \
+         'precM': [OPERAND_PRECISION], \
+         'precA': [RESULT_PRECISION], \
+         'useTensorCore': [TENSOR_CORE_STATUS]
+         }
+query_type = ['gemm', 'tc' if query['useTensorCore'] else 'cuda', '{}_{}'.format(query['precM'], query['precA'])]
+latency, power, energy = estimator.lookup(query, query_type, target_freq=[GPU_FREQUENCY], lookup_target='all')
+```
 
 ### 1. Predict energy consumption of AI models
 

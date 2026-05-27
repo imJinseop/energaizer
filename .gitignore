@@ -227,3 +227,8 @@ database/data/
 .DS_Store
 
 figures/*.csv
+
+database/code/bin/
+database/code/libs/
+
+database/code/nccl/scripts/workloads/*.ipynb
