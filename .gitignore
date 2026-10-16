@@ -232,3 +232,6 @@ database/code/bin/
 database/code/libs/
 
 database/code/nccl/scripts/workloads/*.ipynb
+
+# Custom database
+database/code
